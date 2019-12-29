@@ -2,6 +2,7 @@ package nl.rutgerkok.pokkit.entity;
 
 import java.util.Objects;
 
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
@@ -10,9 +11,10 @@ import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.item.PokkitItemStack;
 
 import cn.nukkit.level.Location;
+import org.bukkit.util.BoundingBox;
 
 /**
- * In Bukkit, dropped items are always entities. This is not the case in Nukkit,
+ * In Bukkit, dropped items are always entities. This is not the case in Nukkit (???),
  * so here we have a "fake entity" implementation.
  *
  */
@@ -42,6 +44,16 @@ public class PokkitItemEntity extends PokkitFakeEntity implements Item {
 	}
 
 	@Override
+	public BoundingBox getBoundingBox() {
+		return new BoundingBox(this.getBoundingBox().getMinX(), this.getBoundingBox().getMinY(), this.getBoundingBox().getMinZ(), this.getBoundingBox().getMaxX(), this.getBoundingBox().getMaxY(), this.getBoundingBox().getMaxZ());
+	}
+
+	@Override
+	public void setRotation(float v, float v1) {
+		this.setRotation(v, v1);
+	}
+
+	@Override
 	public EntityType getType() {
 		return EntityType.DROPPED_ITEM;
 	}
@@ -56,4 +68,8 @@ public class PokkitItemEntity extends PokkitFakeEntity implements Item {
 		throw Pokkit.unsupported();
 	}
 
+	@Override
+	public BlockFace getFacing() {
+		throw Pokkit.unsupported();
+	}
 }

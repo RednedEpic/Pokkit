@@ -8,6 +8,7 @@ import nl.rutgerkok.pokkit.player.PokkitPlayer;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Villager;
@@ -18,6 +19,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MainHand;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.PlayerInventory;
+
+import java.util.Collection;
 
 public class PokkitHumanEntity extends PokkitLivingEntity implements HumanEntity {
 
@@ -101,6 +104,36 @@ public class PokkitHumanEntity extends PokkitLivingEntity implements HumanEntity
 
 	@Override
 	public int getSleepTicks() {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public Location getBedSpawnLocation() {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public void setBedSpawnLocation(Location location) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public void setBedSpawnLocation(Location location, boolean b) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean sleep(Location location, boolean b) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public void wakeup(boolean b) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public Location getBedLocation() {
 		throw Pokkit.unsupported();
 	}
 
@@ -189,4 +222,23 @@ public class PokkitHumanEntity extends PokkitLivingEntity implements HumanEntity
 		throw Pokkit.unsupported();
 	}
 
+	@Override
+	public boolean discoverRecipe(NamespacedKey key) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public int discoverRecipes(Collection <NamespacedKey> key) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public boolean undiscoverRecipe(NamespacedKey key) {
+		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public int undiscoverRecipes(Collection <NamespacedKey> key) {
+		throw Pokkit.unsupported();
+	}
 }

@@ -11,19 +11,14 @@ import java.util.SplittableRandom;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import cn.nukkit.level.Position;
+import cn.nukkit.network.protocol.SetSpawnPositionPacket;
+import cn.nukkit.network.protocol.SetTimePacket;
+import cn.nukkit.network.protocol.StopSoundPacket;
+import nl.rutgerkok.pokkit.item.PokkitItemStack;
+import nl.rutgerkok.pokkit.world.PokkitWorld;
 import org.apache.commons.lang.Validate;
-import org.bukkit.Bukkit;
-import org.bukkit.Effect;
-import org.bukkit.GameMode;
-import org.bukkit.Instrument;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Note;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
-import org.bukkit.SoundCategory;
-import org.bukkit.Statistic;
-import org.bukkit.WeatherType;
+import org.bukkit.*;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.attribute.Attribute;
@@ -33,10 +28,7 @@ import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.craftbukkit.v1_99_R9.CraftServer;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Villager;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
@@ -72,8 +64,8 @@ import nl.rutgerkok.pokkit.plugin.PokkitPlugin;
 import nl.rutgerkok.pokkit.potion.PokkitPotionEffect;
 
 import cn.nukkit.AdventureSettings;
-import cn.nukkit.block.GlobalBlockPalette;
 import cn.nukkit.event.player.PlayerChatEvent;
+import cn.nukkit.level.GlobalBlockPalette;
 import cn.nukkit.level.particle.GenericParticle;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.network.protocol.UpdateBlockPacket;
@@ -256,6 +248,10 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 		return true;
 	}
 
+	/*public void removePotionEffect(PotionEffect bukkitEffect) {
+		nukkit.removeEffect(PokkitPotionEffect.toNukkit(bukkitEffect).getId());
+	}*/
+
 	@Override
 	public void awardAchievement(@SuppressWarnings("deprecation") org.bukkit.Achievement achievement) {
 		// Silently unsupported!
@@ -358,6 +354,11 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	@Override
 	public AdvancementProgress getAdvancementProgress(Advancement advancement) {
 		throw Pokkit.unsupported();
+	}
+
+	@Override
+	public int getClientViewDistance() {
+		return nukkit.getViewDistance();
 	}
 
 	@Override
@@ -506,8 +507,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public String getLocale() {
-		// Not implemented in Nukkit
-		return "en_US";
+		return nukkit.getLoginChainData().getLanguageCode();
 	}
 
 	@Override
@@ -539,13 +539,11 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	@Override
 	public String getPlayerListName() {
 		return nukkit.getDisplayName(); // In Nukkit, if you change the player's display name, it also changes in the player list, so...
-
 	}
 
 	@Override
 	public long getPlayerTime() {
-		throw Pokkit.unsupported();
-
+		return nukkit.getLevel().getTime(); // The player time will be always the same as the level's time.
 	}
 
 	@Override
@@ -555,8 +553,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public WeatherType getPlayerWeather() {
-		throw Pokkit.unsupported();
-
+		return nukkit.getLevel().isRaining() ? WeatherType.DOWNFALL : WeatherType.CLEAR; // Always same as on the server
 	}
 
 	@Override
@@ -567,7 +564,6 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	@Override
 	public float getSaturation() {
 		return nukkit.getFoodData().getFoodSaturationLevel();
-
 	}
 
 	@Override
@@ -618,8 +614,14 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public int getTotalExperience() {
-		throw Pokkit.unsupported();
-
+		int level = nukkit.getExperienceLevel();
+		if (level <= 16) {
+			return nukkit.getExperience() + (int) (Math.pow(level, 2) + 6 * level);
+		} else if (level <= 31) {
+			return nukkit.getExperience() + (int) (2.5 * Math.pow(level, 2) - 40.5 * level + 360);
+		} else {
+			return nukkit.getExperience() + (int) (4.5 * Math.pow(level, 2) - 162.5 * level + 2220);
+		}
 	}
 
 	@Override
@@ -660,7 +662,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public boolean hasGravity() {
-		return true; // I think it is a bit difficult a player to not have gravity...
+		return nukkit.getDataFlag(cn.nukkit.entity.Entity.DATA_FLAGS, cn.nukkit.entity.Entity.DATA_FLAG_GRAVITY);
 	}
 
 	@Override
@@ -764,8 +766,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public boolean isHealthScaled() {
-		throw Pokkit.unsupported();
-
+		return false;
 	}
 
 	@Override
@@ -804,8 +805,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public boolean isSleepingIgnored() {
-		throw Pokkit.unsupported();
-
+		return false; // Silently unsupported!
 	}
 
 	@Override
@@ -870,8 +870,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public boolean performCommand(String arg0) {
-		throw Pokkit.unsupported();
-
+		return nukkit.getServer().dispatchCommand(nukkit, arg0);
 	}
 
 	@Override
@@ -940,8 +939,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void removeAchievement(@SuppressWarnings("deprecation") org.bukkit.Achievement achievement) {
-		throw Pokkit.unsupported();
-
+		// Silently unsupported!
 	}
 
 	@Override
@@ -956,14 +954,12 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void resetPlayerTime() {
-		throw Pokkit.unsupported();
-
+		nukkit.level.sendTime(nukkit);
 	}
 
 	@Override
 	public void resetPlayerWeather() {
-		throw Pokkit.unsupported();
-
+		nukkit.level.sendWeather(nukkit);
 	}
 
 	@Override
@@ -973,8 +969,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void saveData() {
-		throw Pokkit.unsupported();
-
+		nukkit.save();
 	}
 
 	@Override
@@ -1072,20 +1067,47 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void setBedSpawnLocation(Location arg0) {
-		throw Pokkit.unsupported();
-
+		this.nukkit.setSpawn(new Vector3(arg0.getX(), arg0.getY(), arg0.getZ()));
 	}
 
 	@Override
 	public void setBedSpawnLocation(Location arg0, boolean arg1) {
-		throw Pokkit.unsupported();
+		this.nukkit.setSpawn(new Vector3(arg0.getX(), arg0.getY(), arg0.getZ()));
+	}
 
+	@Override
+	public boolean sleep(Location location, boolean b) {
+		return nukkit.sleepOn(PokkitLocation.toNukkit(location));
+	}
+
+	@Override
+	public void wakeup(boolean b) {
+		nukkit.stopSleep();
+
+		if (b) {
+			nukkit.setSpawn(nukkit);
+		}
+	}
+
+	@Override
+	public Location getBedLocation() {
+		if (!nukkit.isSleeping()) {
+			throw new IllegalStateException("Cannot use getBedLocation() while player is not sleeping");
+		} else {
+			return PokkitLocation.toBukkit(nukkit);
+		}
 	}
 
 	@Override
 	public void setCompassTarget(Location arg0) {
-		throw Pokkit.unsupported();
-
+		// this may not be the best idea
+		SetSpawnPositionPacket pk = new SetSpawnPositionPacket();
+		pk.spawnType = SetSpawnPositionPacket.TYPE_WORLD_SPAWN;
+		Position spawn = PokkitWorld.toNukkit(arg0.getWorld()).getSpawnLocation();
+		pk.x = spawn.getFloorX();
+		pk.y = spawn.getFloorY();
+		pk.z = spawn.getFloorZ();
+		nukkit.dataPacket(pk);
 	}
 
 	@Override
@@ -1162,8 +1184,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void setItemOnCursor(ItemStack arg0) {
-		throw Pokkit.unsupported();
-
+		nukkit.getCursorInventory().setItem(0, PokkitItemStack.toNukkitCopy(arg0));
 	}
 
 	@Override
@@ -1209,8 +1230,9 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void setPlayerTime(long arg0, boolean arg1) {
-		throw Pokkit.unsupported();
-
+		SetTimePacket pk = new SetTimePacket();
+		pk.time = (int) arg0;
+		nukkit.dataPacket(pk);
 	}
 
 	@Override
@@ -1289,8 +1311,8 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void setTotalExperience(int arg0) {
-		throw Pokkit.unsupported();
-
+		nukkit.setExperience(0, 0);
+		nukkit.addExperience(arg0);
 	}
 
 	@Override
@@ -1306,7 +1328,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	private void showPlayer(Class<?> clazz, Player player) {
 		this.hidingRequests.remove(clazz);
 		if (this.hidingRequests.isEmpty()) {
-			nukkit.showPlayer(PokkitPlayer.toNukkit(player));
+			nukkit.showPlayer(toNukkit(player));
 		}
 	}
 
@@ -1344,9 +1366,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	@Override
 	public <T> void spawnParticle(Particle particle, double x, double y, double z, int count, double offsetX,
 			double offsetY, double offsetZ, double extra, T data) {
-		int id = 0;
-
-		id = PokkitParticle.toNukkit(particle);
+		int id = PokkitParticle.toNukkit(particle);
 
 		SplittableRandom random = new SplittableRandom();
 
@@ -1436,17 +1456,20 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public void stopSound(String sound) {
-		// Silently unsupported!
+		StopSoundPacket pk = new StopSoundPacket();
+		pk.name = sound;
+		pk.stopAll = false;
+		nukkit.dataPacket(pk);
 	}
 
 	@Override
 	public void stopSound(String sound, SoundCategory category) {
-		// Silently unsupported!
+		stopSound(sound);
 	}
 
 	@Override
 	public void updateCommands() {
-		// Silently unsupported!
+		nukkit.sendCommandData();
 	}
 
 	@Override

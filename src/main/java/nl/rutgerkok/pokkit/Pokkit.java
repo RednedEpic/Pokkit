@@ -1,5 +1,11 @@
 package nl.rutgerkok.pokkit;
 
+import cn.nukkit.plugin.PluginBase;
+import com.google.common.collect.ImmutableList;
+import nl.rutgerkok.pokkit.pluginservice.*;
+import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.v1_99_R9.CraftServer;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,24 +15,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import nl.rutgerkok.pokkit.pluginservice.EntityEvents;
-import nl.rutgerkok.pokkit.pluginservice.InventoryEvents;
-import nl.rutgerkok.pokkit.pluginservice.MainScoreboardService;
-import nl.rutgerkok.pokkit.pluginservice.PermissionsYml;
-import nl.rutgerkok.pokkit.pluginservice.PlayerBlockEvents;
-import nl.rutgerkok.pokkit.pluginservice.PlayerChatEvents;
-import nl.rutgerkok.pokkit.pluginservice.PlayerConnectEvents;
-import nl.rutgerkok.pokkit.pluginservice.PlayerInteractEvents;
-import nl.rutgerkok.pokkit.pluginservice.PluginService;
-import nl.rutgerkok.pokkit.pluginservice.PokkitService;
-
-import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_99_R9.CraftServer;
-
-import com.google.common.collect.ImmutableList;
-
-import cn.nukkit.plugin.PluginBase;
-
 /**
  * Startup class.
  *
@@ -34,11 +22,11 @@ import cn.nukkit.plugin.PluginBase;
 public final class Pokkit {
 
 	public static final String NAME = "Pokkit";
-	static String VERSION = "?";
+	static String VERSION;
 	/**
 	 * Bukkit version. Mutable, so exposed through {@link #getBukkitVersion()}.
 	 */
-	static String BUKKIT_VERSION = "?";
+	static String BUKKIT_VERSION = "1.13.2-R0.1-SNAPSHOT";
 
 	/**
 	 * Makes sure that the given expression is true. If not, an exception is
@@ -83,7 +71,7 @@ public final class Pokkit {
 
 	private final List<PokkitService> services = ImmutableList.of(new MainScoreboardService(), new PermissionsYml(),
 			new PluginService(), new PlayerBlockEvents(), new PlayerConnectEvents(), new PlayerChatEvents(),
-			new PlayerInteractEvents(), new EntityEvents(), new InventoryEvents());
+			new PlayerInteractEvents(), new EntityEvents(), new InventoryEvents(), new PlayerItemConsumeEvents());
 
 	public Pokkit() {
 		// Created using reflection
@@ -114,6 +102,7 @@ public final class Pokkit {
 	}
 
 	public void onLoad(PluginBase plugin) {
+		VERSION = plugin.getDescription().getVersion();
 
 		File pluginFolder = new File(plugin.getDataFolder(), "bukkitPlugins");
 		if (!pluginFolder.exists()) {
