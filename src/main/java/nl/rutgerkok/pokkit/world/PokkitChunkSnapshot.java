@@ -9,6 +9,7 @@ import nl.rutgerkok.pokkit.Pokkit;
 import nl.rutgerkok.pokkit.blockdata.PokkitBlockData;
 
 import cn.nukkit.block.Block;
+import cn.nukkit.level.biome.EnumBiome;
 import cn.nukkit.level.format.generic.BaseFullChunk;
 
 public class PokkitChunkSnapshot implements ChunkSnapshot {
@@ -83,8 +84,13 @@ public class PokkitChunkSnapshot implements ChunkSnapshot {
 
 	@Override
 	public double getRawBiomeTemperature(int x, int z) {
-		throw Pokkit.unsupported();
-
+		int biomeId = nukkit.getBiomeId(x, z);
+		@SuppressWarnings("deprecation")
+		cn.nukkit.level.biome.Biome biome = EnumBiome.getBiome(biomeId);
+		if (biome != null && biome.isFreezing()) {
+			return 0.1;
+		}
+		return 0.6;
 	}
 
 	@Override
