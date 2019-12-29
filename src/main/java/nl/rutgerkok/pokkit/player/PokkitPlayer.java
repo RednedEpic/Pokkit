@@ -28,10 +28,7 @@ import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.craftbukkit.v1_99_R9.CraftServer;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Villager;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
@@ -547,13 +544,11 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	@Override
 	public String getPlayerListName() {
 		return nukkit.getDisplayName(); // In Nukkit, if you change the player's display name, it also changes in the player list, so...
-
 	}
 
 	@Override
 	public long getPlayerTime() {
-		throw Pokkit.unsupported();
-
+		return nukkit.getLevel().getTime(); // The player time will be always the same as the level's time.
 	}
 
 	@Override
@@ -563,8 +558,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public WeatherType getPlayerWeather() {
-		throw Pokkit.unsupported();
-
+		return nukkit.getLevel().isRaining() ? WeatherType.DOWNFALL : WeatherType.CLEAR; // Always same as on the server
 	}
 
 	@Override
@@ -575,7 +569,6 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 	@Override
 	public float getSaturation() {
 		return nukkit.getFoodData().getFoodSaturationLevel();
-
 	}
 
 	@Override
@@ -674,7 +667,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public boolean hasGravity() {
-		return true; // I think it is a bit difficult a player to not have gravity...
+		return nukkit.getDataFlag(cn.nukkit.entity.Entity.DATA_FLAGS, cn.nukkit.entity.Entity.DATA_FLAG_GRAVITY);
 	}
 
 	@Override
@@ -778,8 +771,7 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 
 	@Override
 	public boolean isHealthScaled() {
-		throw Pokkit.unsupported();
-
+		return false;
 	}
 
 	@Override
