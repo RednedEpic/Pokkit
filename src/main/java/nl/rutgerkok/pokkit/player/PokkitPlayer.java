@@ -167,7 +167,8 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 						break;
 					case ACTION_BAR:
 					default:
-						throw Pokkit.unsupported();
+						nukkit.sendActionBar(component.toLegacyText());
+						break;
 				}
 			}
 
@@ -179,8 +180,12 @@ public class PokkitPlayer extends PokkitHumanEntity implements Player {
 						sendMessage(components);
 						break;
 					case ACTION_BAR:
-					default:
-						throw Pokkit.unsupported();
+						StringBuilder text = new StringBuilder();
+						for (BaseComponent component : components) {
+							text.append(component.toLegacyText());
+						}
+						nukkit.sendActionBar(text.toString());
+						break;
 				}
 			}
 
