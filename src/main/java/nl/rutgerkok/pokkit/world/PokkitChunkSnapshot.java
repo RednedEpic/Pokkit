@@ -52,7 +52,7 @@ public class PokkitChunkSnapshot implements ChunkSnapshot {
 
 	@Override
 	public int getBlockEmittedLight(int x, int y, int z) {
-		throw Pokkit.unsupported();
+		return nukkit.getBlockLight(x, y, z);
 	}
 
 	@Override
