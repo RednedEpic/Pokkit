@@ -84,7 +84,7 @@ public class PokkitHumanEntity extends PokkitLivingEntity implements HumanEntity
 
 	@Override
 	public MainHand getMainHand() {
-		return MainHand.LEFT;
+		return MainHand.RIGHT;
 	}
 
 	@Override
